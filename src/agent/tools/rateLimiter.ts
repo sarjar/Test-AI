@@ -11,20 +11,19 @@ class RateLimiter {
   async waitIfNeeded(key: string): Promise<void> {
     const now = Date.now();
     const requests = this.requests.get(key) || [];
-    
+
     // Remove old requests outside the window
-    const validRequests = requests.filter(time => now - time < this.windowMs);
-    
+    const validRequests = requests.filter((time) => now - time < this.windowMs);
+
     if (validRequests.length >= this.maxRequests) {
       const oldestRequest = Math.min(...validRequests);
       const waitTime = this.windowMs - (now - oldestRequest);
-      
+
       if (waitTime > 0) {
-        console.log(`Rate limit reached for ${key}, waiting ${waitTime}ms`);
-        await new Promise(resolve => setTimeout(resolve, waitTime));
+        await new Promise((resolve) => setTimeout(resolve, waitTime));
       }
     }
-    
+
     // Add current request
     validRequests.push(now);
     this.requests.set(key, validRequests);
@@ -42,4 +41,4 @@ class RateLimiter {
 // Global rate limiter instance
 export const globalRateLimiter = new RateLimiter(5, 30000); // 5 requests per 30 seconds
 
-export default RateLimiter; 
+export default RateLimiter;

@@ -1,12 +1,12 @@
 import { END, StateGraph } from "@langchain/langgraph";
-import { ResearchRequest, WorkflowState } from './types';
-import guardIntentNode from './nodes/guardIntent';
-import loadPreferencesNode from './nodes/loadPreferences';
-import generateSearchTermsNode from './nodes/generateSearchTerms';
-import scrapeDataNode from './nodes/scrapeData';
-import summarizeDataNode from './nodes/summarizeData';
-import formatReportNode from './nodes/formatReport';
-import generalChatNode from './nodes/generalChat';
+import { ResearchRequest, WorkflowState } from "./types";
+import guardIntentNode from "./nodes/guardIntent";
+import loadPreferencesNode from "./nodes/loadPreferences";
+import generateSearchTermsNode from "./nodes/generateSearchTerms";
+import scrapeDataNode from "./nodes/scrapeData";
+import summarizeDataNode from "./nodes/summarizeData";
+import formatReportNode from "./nodes/formatReport";
+import generalChatNode from "./nodes/generalChat";
 
 // -----------------------------------------------------------------------------
 // Modular Workflow Paths for Dividend Investment Research Platform
@@ -30,34 +30,60 @@ import generalChatNode from './nodes/generalChat';
 // -----------------------------------------------------------------------------
 
 // Error handling nodes
-const handleErrorNode = async (state: WorkflowState): Promise<WorkflowState> => {
+const handleErrorNode = async (
+  state: WorkflowState,
+): Promise<WorkflowState> => {
   return {
     ...state,
     error: state.error || "An unexpected error occurred",
-    status: "error"
+    status: "error",
   };
 };
 
 // Define the state annotation using the modern LangGraph approach
 const workflowGraph = new StateGraph<WorkflowState>({
   channels: {
-    state: {
-      value: (prev, curr) => ({
-        ...prev,
-        ...curr,
-        userInput: curr?.userInput ?? prev?.userInput,
-        researchRequest: curr?.researchRequest ?? prev?.researchRequest,
-        status: curr?.status ?? prev?.status,
-        error: curr?.error ?? prev?.error,
-        preferences: curr?.preferences ?? prev?.preferences,
-        searchTerms: curr?.searchTerms ?? prev?.searchTerms,
-        scrapedData: curr?.scrapedData ?? prev?.scrapedData,
-        summary: curr?.summary ?? prev?.summary,
-        report: curr?.report ?? prev?.report,
-        inputType: curr?.inputType ?? prev?.inputType
-      })
-    }
-  }
+    userInput: {
+      value: (prev, curr) => curr ?? prev,
+      default: () => undefined,
+    },
+    researchRequest: {
+      value: (prev, curr) => curr ?? prev,
+      default: () => undefined,
+    },
+    status: {
+      value: (prev, curr) => curr ?? prev,
+      default: () => "start" as const,
+    },
+    error: {
+      value: (prev, curr) => curr ?? prev,
+      default: () => undefined,
+    },
+    preferences: {
+      value: (prev, curr) => curr ?? prev,
+      default: () => undefined,
+    },
+    searchTerms: {
+      value: (prev, curr) => curr ?? prev,
+      default: () => undefined,
+    },
+    scrapedData: {
+      value: (prev, curr) => curr ?? prev,
+      default: () => undefined,
+    },
+    summary: {
+      value: (prev, curr) => curr ?? prev,
+      default: () => undefined,
+    },
+    report: {
+      value: (prev, curr) => curr ?? prev,
+      default: () => undefined,
+    },
+    inputType: {
+      value: (prev, curr) => curr ?? prev,
+      default: () => undefined,
+    },
+  },
 });
 
 // Add main workflow nodes
@@ -77,7 +103,6 @@ workflowGraph.setEntryPoint("guard_intent");
 workflowGraph.addConditionalEdges(
   "guard_intent",
   (state: WorkflowState) => {
-    console.log("Guard intent routing decision for state:", state);
     if (state.status === "error") return "handle_error";
     if (state.status === "general_chat") return "general_chat";
     return "load_preferences";
@@ -85,81 +110,78 @@ workflowGraph.addConditionalEdges(
   {
     error: "handle_error",
     general_chat: "general_chat",
-    load_preferences: "load_preferences"
-  }
+    load_preferences: "load_preferences",
+  },
 );
 
 workflowGraph.addConditionalEdges(
   "load_preferences",
   (state: WorkflowState) => {
-    console.log("Load preferences routing decision for state:", state);
     return state.status === "error" ? "handle_error" : "generate_search_terms";
   },
   {
     error: "handle_error",
-    generate_search_terms: "generate_search_terms"
-  }
+    generate_search_terms: "generate_search_terms",
+  },
 );
 
 workflowGraph.addConditionalEdges(
   "generate_search_terms",
   (state: WorkflowState) => {
-    console.log("Generate search terms routing decision for state:", state);
     return state.status === "error" ? "handle_error" : "scrape_data";
   },
   {
     error: "handle_error",
-    scrape_data: "scrape_data"
-  }
+    scrape_data: "scrape_data",
+  },
 );
 
 workflowGraph.addConditionalEdges(
   "scrape_data",
   (state: WorkflowState) => {
-    console.log("Scrape data routing decision for state:", state);
-    return state.status === "error" ? "handle_error" : "summarize_data";
+    if (state.status === "error") return "handle_error";
+    if (state.status === "format_report") return "format_report";
+    return "summarize_data";
   },
   {
     error: "handle_error",
-    summarize_data: "summarize_data"
-  }
+    format_report: "format_report",
+    summarize_data: "summarize_data",
+  },
 );
 
 workflowGraph.addConditionalEdges(
   "summarize_data",
   (state: WorkflowState) => {
-    console.log("Summarize data routing decision for state:", state);
     return state.status === "error" ? "handle_error" : "format_report";
   },
   {
     error: "handle_error",
-    format_report: "format_report"
-  }
+    format_report: "format_report",
+  },
 );
 
 workflowGraph.addConditionalEdges(
   "format_report",
   (state: WorkflowState) => {
-    console.log("Format report routing decision for state:", state);
     return state.status === "error" ? "handle_error" : "complete";
   },
   {
     error: "handle_error",
-    complete: END
-  }
+    complete: END,
+  },
 );
 
 // Add edges for chat path
 workflowGraph.addConditionalEdges(
   "general_chat",
   (state: WorkflowState) => {
-    console.log("General chat routing decision for state:", state);
     return state.status === "error" ? "handle_error" : "complete";
   },
   {
     error: "handle_error",
-    complete: END
-  }
+    complete: END,
+  },
 );
 
 // Add error handling edge
@@ -168,28 +190,30 @@ workflowGraph.addEdge("handle_error", END);
 const compiledGraph = workflowGraph.compile();
 
 export async function runAgentWorkflow(request: string | ResearchRequest) {
-  console.log("Running agent workflow with input:", request);
-
   const initialState: WorkflowState = {
-    userInput: typeof request === 'string' ? request : undefined,
-    researchRequest: typeof request === 'string' ? undefined : request,
-    status: "start"
+    userInput: typeof request === "string" ? request : undefined,
+    researchRequest: typeof request === "string" ? undefined : request,
+    status: "start",
   };
 
-  console.log("Initial state:", initialState);
   try {
-    const result = await compiledGraph.invoke({ state: initialState });
-    console.log("CompiledGraph result:", result);
-    return result;
-  } catch (error) {
-    console.error("Error in runAgentWorkflow:", error);
-    return {
-      state: {
+    const result = await compiledGraph.invoke(initialState);
+
+    // Ensure we return a valid WorkflowState
+    if (!result || typeof result !== "object") {
+      return {
         ...initialState,
         status: "error" as const,
-        error: error instanceof Error ? error.message : "Unknown error",
-      }
+        error: "Workflow execution returned invalid result",
+      };
+    }
+
+    return result;
+  } catch (error) {
+    return {
+      ...initialState,
+      status: "error" as const,
+      error: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }
-

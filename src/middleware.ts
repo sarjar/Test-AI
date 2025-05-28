@@ -1,46 +1,45 @@
-import { createServerClient } from '@supabase/ssr'
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from "next/server";
+import { createServerClient } from "@supabase/ssr";
 
 export async function middleware(req: NextRequest) {
-  const res = NextResponse.next()
+  const res = NextResponse.next();
+
+  // Check if Supabase environment variables are available
+  if (
+    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  ) {
+    console.warn(
+      "Supabase URL or Anon Key not available. Skipping Supabase client creation.",
+    );
+    return res;
+  }
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
       cookies: {
         get: (name: string) => req.cookies.get(name)?.value,
         set: (name: string, value: string, options?: any) => {
-          res.cookies.set(name, value, options)
+          res.cookies.set(name, value, options);
         },
         remove: (name: string, options?: any) => {
-          res.cookies.set({ name, value: '', ...options, maxAge: -1 })
-        }
-      }
-    }
-  )
+          res.cookies.set({ name, value: "", ...options, maxAge: -1 });
+        },
+      },
+    },
+  );
 
   // Refresh session if expired - required for Server Components
-  const { data: { session }, error } = await supabase.auth.getSession()
+  const {
+    data: { session },
+    error,
+  } = await supabase.auth.getSession();
 
   if (error) {
-    console.error('Auth session error:', error)
+    console.error("Auth session error:", error);
   }
 
-  return res
-}
-
-// Ensure the middleware is only called for relevant paths
-export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public (public files)
-     */
-    '/((?!_next/static|_next/image|favicon.ico|public|api).*)',
-  ],
+  return res;
 }

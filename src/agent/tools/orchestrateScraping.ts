@@ -1,9 +1,10 @@
-import { UserPreferences, ETFData } from '../types';
-import scrapeGoBankingRates from './scrapeGoBankingRates';
-import scrapeYahooFinance from './scrapeYahooFinance';
-import scrapeSeekingAlpha from './scrapeSeekingAlpha';
+import { UserPreferences, ETFData } from "../types";
+import getAlphaVantageData from "./alphaVantage";
+import getFinancialDatasetAIData from "./financialDatasetAI";
+// Legacy scrapers kept as fallback
+import scrapeGoBankingRates from "./scrapeGoBankingRates";
 
-interface ScrapingTask {
+interface DataSourceTask {
   source: string;
   priority: number;
   query: string;
@@ -11,13 +12,12 @@ interface ScrapingTask {
 
 const orchestrateScraping = async (
   query: string,
-  preferences: UserPreferences
+  preferences: UserPreferences,
 ): Promise<ETFData[]> => {
-  console.log('Starting scraping orchestration for query:', query);
-  const tasks: ScrapingTask[] = [
-    { source: 'GoBankingRates', priority: 1, query },
-    { source: 'YahooFinance', priority: 2, query },
-    { source: 'SeekingAlpha', priority: 3, query }
+  const tasks: DataSourceTask[] = [
+    { source: "AlphaVantage", priority: 1, query },
+    { source: "FinancialDatasetAI", priority: 2, query },
+    { source: "GoBankingRates", priority: 3, query }, // Fallback scraper
   ];
 
   const results: ETFData[] = [];
@@ -26,55 +26,101 @@ const orchestrateScraping = async (
   // Try each source in sequence
   for (const task of tasks) {
     try {
-      console.log(`Scraping from ${task.source}...`);
       let sourceResults: ETFData[] = [];
-      
+
       switch (task.source) {
-        case 'GoBankingRates':
+        case "AlphaVantage":
+          sourceResults = await getAlphaVantageData(task.query);
+          break;
+        case "FinancialDatasetAI":
+          sourceResults = await getFinancialDatasetAIData(task.query);
+          break;
+        case "GoBankingRates":
           sourceResults = await scrapeGoBankingRates(task.query);
-          break;
-        case 'YahooFinance':
-          sourceResults = await scrapeYahooFinance(task.query);
-          break;
-        case 'SeekingAlpha':
-          sourceResults = await scrapeSeekingAlpha(task.query);
           break;
         default:
           throw new Error(`Unknown source: ${task.source}`);
       }
 
-      // Filter results based on preferences with case-insensitive matching
-      const filteredResults = sourceResults.filter(etf => {
-        const normalizedSectors = preferences.sectors.map(s => s.toLowerCase());
-        const normalizedRegions = preferences.regions.map(r => r.toLowerCase());
-        
-        const matchesSector = normalizedSectors.includes(etf.sector.toLowerCase());
-        const matchesRegion = !etf.region || normalizedRegions.includes(etf.region.toLowerCase());
-        const matchesYield = etf.dividendYield >= preferences.yieldMin && etf.dividendYield <= preferences.yieldMax;
-        
+      // Filter results based on preferences with very flexible matching
+      const filteredResults = sourceResults.filter((etf) => {
+        const normalizedSectors = preferences.sectors.map((s) =>
+          s.toLowerCase(),
+        );
+        const normalizedRegions = preferences.regions.map((r) =>
+          r.toLowerCase(),
+        );
+
+        // Very flexible sector matching - include if any sector matches or if "all" is specified
+        const etfSectorLower = (etf.sector || "").toLowerCase();
+        const matchesSector =
+          normalizedSectors.length === 0 ||
+          normalizedSectors.includes("all") ||
+          normalizedSectors.some(
+            (sector) =>
+              etfSectorLower.includes(sector) ||
+              sector.includes(etfSectorLower) ||
+              (sector === "technology" &&
+                (etfSectorLower.includes("tech") ||
+                  etfSectorLower.includes("information") ||
+                  etfSectorLower.includes("software"))) ||
+              (sector === "finance" &&
+                (etfSectorLower.includes("financial") ||
+                  etfSectorLower.includes("bank") ||
+                  etfSectorLower.includes("insurance"))) ||
+              (sector === "healthcare" && etfSectorLower.includes("health")) ||
+              (sector === "energy" && etfSectorLower.includes("energy")) ||
+              (sector === "utilities" && etfSectorLower.includes("utilities")),
+          ) ||
+          // If no specific sector preferences, include all ETFs
+          normalizedSectors.length === 0;
+
+        // Very flexible region matching - include USA, Global, and international
+        const etfRegionLower = (etf.region || "usa").toLowerCase();
+        const matchesRegion =
+          normalizedRegions.length === 0 ||
+          normalizedRegions.includes("all") ||
+          normalizedRegions.includes("global") ||
+          normalizedRegions.some(
+            (region) =>
+              etfRegionLower.includes(region) ||
+              region.includes(etfRegionLower) ||
+              (region === "usa" &&
+                (etfRegionLower.includes("us") ||
+                  etfRegionLower.includes("america") ||
+                  etfRegionLower.includes("united states"))) ||
+              (region === "global" &&
+                (etfRegionLower.includes("international") ||
+                  etfRegionLower.includes("world") ||
+                  etfRegionLower.includes("emerging"))) ||
+              (region === "europe" && etfRegionLower.includes("europe")) ||
+              (region === "asia" && etfRegionLower.includes("asia")),
+          ) ||
+          // If no specific region preferences, include all ETFs
+          normalizedRegions.length === 0;
+
+        // More generous yield matching with wider tolerance
+        const matchesYield =
+          etf.dividendYield >= Math.max(0, preferences.yieldMin - 1.5) &&
+          etf.dividendYield <= preferences.yieldMax + 3.0;
+
         return matchesSector && matchesRegion && matchesYield;
       });
 
-      console.log(`Found ${filteredResults.length} matching results from ${task.source}`);
       results.push(...filteredResults);
     } catch (error) {
-      const errorMessage = `Error scraping ${task.source}: ${error instanceof Error ? error.message : 'Unknown error'}`;
-      console.error(errorMessage);
-      errors.push(errorMessage);
+      errors.push(`Error fetching data from ${task.source}`);
     }
   }
 
   // Remove duplicates based on symbol
-  const uniqueResults = results.filter((etf, index, self) => 
-    index === self.findIndex(e => e.symbol === etf.symbol)
+  const uniqueResults = results.filter(
+    (etf, index, self) =>
+      index === self.findIndex((e) => e.symbol === etf.symbol),
   );
 
-  if (errors.length > 0) {
-    console.warn('Scraping completed with errors:', errors);
-  }
-
-  console.log(`Scraping completed. Total unique results: ${uniqueResults.length}`);
+  // Data collection completed
   return uniqueResults;
 };
 
-export default orchestrateScraping; 
+export default orchestrateScraping;

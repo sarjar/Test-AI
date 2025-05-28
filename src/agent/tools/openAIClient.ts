@@ -1,18 +1,21 @@
 import { ChatOpenAI } from "@langchain/openai";
 
 const getOpenAIClient = () => {
-  if (!process.env.OPENAI_API_KEY) {
-    throw new Error("OPENAI_API_KEY is not set");
-  }
+  const apiKey = process.env.OPENAI_API_KEY;
 
-  console.log("OPENAI_API_KEY IS SET");
+  if (!apiKey || apiKey.trim() === "") {
+    throw new Error(
+      "OPENAI_API_KEY is not configured. Please set your OpenAI API key in the environment variables.",
+    );
+  }
 
   return new ChatOpenAI({
     modelName: "gpt-4o",
     temperature: 0.7,
     maxRetries: 3,
     timeout: 30000,
+    openAIApiKey: apiKey,
   });
 };
 
-export default getOpenAIClient; 
+export default getOpenAIClient;

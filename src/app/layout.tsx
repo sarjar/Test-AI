@@ -1,13 +1,14 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from '@/components/theme';
+import { Inter } from "next/font/google";
+import { ThemeProvider } from "@/components/theme";
+import { TempoInit } from "./tempo-init";
+import Script from "next/script";
 
 const inter = Inter({ subsets: ["latin"] });
 
-export const metadata: Metadata = {
+export const metadata = {
   title: "High Dividend AI",
-  description: "AI-powered dividend ETF research and recommendations",
+  description: "AI-powered dividend stock research",
 };
 
 export default function RootLayout({
@@ -18,6 +19,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
+        <Script src="https://api.tempo.new/proxy-asset?url=https://storage.googleapis.com/tempo-public-assets/error-handling.js" />
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
@@ -25,6 +27,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {children}
+          <TempoInit />
         </ThemeProvider>
       </body>
     </html>

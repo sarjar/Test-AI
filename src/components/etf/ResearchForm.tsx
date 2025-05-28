@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { createClient } from "@/supabase/client";
 import ChatInterface from "@/components/etf/ChatInterface";
-import ReactMarkdown from 'react-markdown';
+import ReactMarkdown from "react-markdown";
 
 const sectors = [
   { id: "technology", label: "Technology" },
@@ -137,18 +137,21 @@ export default function ResearchForm() {
   function extractRegionFromName(name: string) {
     if (!name) return null;
     const lower = name.toLowerCase();
-    if (lower.includes('usa')) return 'USA';
-    if (lower.includes('global')) return 'Global';
+    if (lower.includes("usa")) return "USA";
+    if (lower.includes("global")) return "Global";
     return null;
   }
 
   function cleanName(name: string) {
-    if (!name) return '';
-    return name.replace(/\b(usa|global)\b/gi, '').replace(/\s+/g, ' ').trim();
+    if (!name) return "";
+    return name
+      .replace(/\b(usa|global)\b/gi, "")
+      .replace(/\s+/g, " ")
+      .trim();
   }
 
   function capitalizeSector(str: string) {
-    if (!str) return '';
+    if (!str) return "";
     return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
   }
 
@@ -230,7 +233,10 @@ export default function ResearchForm() {
 
         <TabsContent value="results" className="pt-4">
           {/* Show message if no report has been generated yet */}
-          {(!result || (!result.report && !result.error && result.status !== "loading")) && (
+          {(!result ||
+            (!result.report &&
+              !result.error &&
+              result.status !== "loading")) && (
             <div className="flex flex-col items-center justify-center py-12">
               <Button
                 onClick={() => setActiveTab("preferences")}
@@ -240,7 +246,8 @@ export default function ResearchForm() {
                 Generate Research Report
               </Button>
               <span className="text-muted-foreground text-center">
-                No research report found. Please generate a report by selecting your investment preferences.
+                No research report found. Please generate a report by selecting
+                your investment preferences.
               </span>
             </div>
           )}
@@ -253,16 +260,19 @@ export default function ResearchForm() {
                       Generating Your Research Report
                     </h3>
                   </div>
-                  <div className="w-full bg-secondary rounded-full h-2.5 relative overflow-hidden" style={{ position: 'relative', overflow: 'hidden' }}>
+                  <div
+                    className="w-full bg-secondary rounded-full h-2.5 relative overflow-hidden"
+                    style={{ position: "relative", overflow: "hidden" }}
+                  >
                     <div
                       className="bg-primary h-2.5 rounded-full"
                       style={{
-                        position: 'absolute',
+                        position: "absolute",
                         left: 0,
                         top: 0,
-                        width: '30%',
+                        width: "30%",
                         minWidth: 60,
-                        animation: 'progressBarLoop 1.2s linear infinite',
+                        animation: "progressBarLoop 1.2s linear infinite",
                       }}
                     ></div>
                     <style>
@@ -294,7 +304,7 @@ export default function ResearchForm() {
               {result.status === "success" && result.report && (
                 <div className="space-y-6">
                   <div>
-                    <ReactMarkdown>{result.report.summary ?? ''}</ReactMarkdown>
+                    <ReactMarkdown>{result.report.summary ?? ""}</ReactMarkdown>
                   </div>
                   <div>
                     <h3 className="text-xl font-semibold mb-3">
@@ -312,32 +322,56 @@ export default function ResearchForm() {
                           </tr>
                         </thead>
                         <tbody>
-                          {(result.report.topPicks && result.report.topPicks.length > 0) ? (
-                            result.report.topPicks.map((etf: any, i: number) => {
-                              const rawName = etf.name || etf.title || 'N/A';
-                              const region = etf.region && etf.region !== 'N/A'
-                                ? etf.region
-                                : extractRegionFromName(rawName) || 'N/A';
-                              const displayName = capitalizeWords(cleanName(rawName));
-                              const sector = capitalizeSector(etf.sector || 'N/A');
-                              return (
-                                <tr key={i} className="border-b border-muted">
-                                  <td className="p-2" title={rawName}>{displayName}</td>
-                                  <td className="p-2 font-mono">{etf.symbol || etf.ticker || 'N/A'}</td>
-                                  <td className="p-2 font-medium">
-                                    <span className={etf.dividendYield > 5 ? "text-green-600" : ""}>
-                                      {etf.dividendYield ? `${etf.dividendYield}%` : 'N/A'}
-                                    </span>
-                                  </td>
-                                  <td className="p-2">{sector}</td>
-                                  <td className="p-2">{region}</td>
-                                </tr>
-                              );
-                            })
+                          {result.report.topPicks &&
+                          result.report.topPicks.length > 0 ? (
+                            result.report.topPicks.map(
+                              (etf: any, i: number) => {
+                                const rawName = etf.name || etf.title || "N/A";
+                                const region =
+                                  etf.region && etf.region !== "N/A"
+                                    ? etf.region
+                                    : extractRegionFromName(rawName) || "N/A";
+                                const displayName = capitalizeWords(
+                                  cleanName(rawName),
+                                );
+                                const sector = capitalizeSector(
+                                  etf.sector || "N/A",
+                                );
+                                return (
+                                  <tr key={i} className="border-b border-muted">
+                                    <td className="p-2" title={rawName}>
+                                      {displayName}
+                                    </td>
+                                    <td className="p-2 font-mono">
+                                      {etf.symbol || etf.ticker || "N/A"}
+                                    </td>
+                                    <td className="p-2 font-medium">
+                                      <span
+                                        className={
+                                          etf.dividendYield > 5
+                                            ? "text-green-600"
+                                            : ""
+                                        }
+                                      >
+                                        {etf.dividendYield
+                                          ? `${etf.dividendYield}%`
+                                          : "N/A"}
+                                      </span>
+                                    </td>
+                                    <td className="p-2">{sector}</td>
+                                    <td className="p-2">{region}</td>
+                                  </tr>
+                                );
+                              },
+                            )
                           ) : (
                             <tr>
-                              <td colSpan={5} className="p-2 text-center text-muted-foreground">
-                                No picks found. Please try different preferences.
+                              <td
+                                colSpan={5}
+                                className="p-2 text-center text-muted-foreground"
+                              >
+                                No picks found. Please try different
+                                preferences.
                               </td>
                             </tr>
                           )}

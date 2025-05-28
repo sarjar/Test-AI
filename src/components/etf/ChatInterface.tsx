@@ -29,42 +29,66 @@ export default function ChatInterface() {
       } = await supabase.auth.getUser();
 
       if (user) {
-        const { data, error } = await supabase
-          .from("chat_history")
-          .select("*")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: true })
-          .limit(10);
+        try {
+          const { data, error } = await supabase
+            .from("chat_history")
+            .select("*")
+            .eq("user_id", user.id)
+            .order("created_at", { ascending: true })
+            .limit(10);
 
-        if (error) {
-          console.error("Error loading chat history:", error);
-          return;
-        }
+          if (error) {
+            // If table doesn't exist or other error, just show welcome message
+            console.warn("Chat history not available:", error.message);
+            setMessages([
+              {
+                id: "welcome",
+                role: "assistant",
+                content:
+                  "Hello! I'm your investment research assistant. Ask me about dividend ETFs, stocks, or investment strategies.",
+                timestamp: new Date(),
+              },
+            ]);
+            return;
+          }
 
-        if (data && data.length > 0) {
-          const formattedMessages = data
-            .map((item) => ({
-              id: item.id,
-              role: "user" as const,
-              content: item.query,
-              timestamp: new Date(item.created_at),
-            }))
-            .flatMap((userMsg, index) => {
-              const correspondingData = data[index];
-              return [
-                userMsg,
-                {
-                  id: `response-${userMsg.id}`,
-                  role: "assistant" as const,
-                  content: correspondingData.response,
-                  timestamp: new Date(correspondingData.created_at),
-                },
-              ];
-            });
+          if (data && data.length > 0) {
+            const formattedMessages = data
+              .map((item) => ({
+                id: item.id,
+                role: "user" as const,
+                content: item.query,
+                timestamp: new Date(item.created_at),
+              }))
+              .flatMap((userMsg, index) => {
+                const correspondingData = data[index];
+                return [
+                  userMsg,
+                  {
+                    id: `response-${userMsg.id}`,
+                    role: "assistant" as const,
+                    content: correspondingData.response,
+                    timestamp: new Date(correspondingData.created_at),
+                  },
+                ];
+              });
 
-          setMessages(formattedMessages);
-        } else {
-          // Add welcome message if no history
+            setMessages(formattedMessages);
+          } else {
+            // Add welcome message if no history
+            setMessages([
+              {
+                id: "welcome",
+                role: "assistant",
+                content:
+                  "Hello! I'm your investment research assistant. Ask me about dividend ETFs, stocks, or investment strategies.",
+                timestamp: new Date(),
+              },
+            ]);
+          }
+        } catch (err) {
+          // Handle any unexpected errors
+          console.warn("Failed to load chat history:", err);
           setMessages([
             {
               id: "welcome",
@@ -75,6 +99,17 @@ export default function ChatInterface() {
             },
           ]);
         }
+      } else {
+        // User not authenticated, show welcome message
+        setMessages([
+          {
+            id: "welcome",
+            role: "assistant",
+            content:
+              "Hello! I'm your investment research assistant. Ask me about dividend ETFs, stocks, or investment strategies.",
+            timestamp: new Date(),
+          },
+        ]);
       }
     };
 
@@ -120,7 +155,9 @@ export default function ChatInterface() {
         id: `response-${userMessage.id}`,
         role: "assistant",
         content:
-          data.chatResponse || "I'm sorry, I couldn't process your request.",
+          data.summary ||
+          data.chatResponse ||
+          "I'm sorry, I couldn't process your request.",
         timestamp: new Date(),
       };
 
