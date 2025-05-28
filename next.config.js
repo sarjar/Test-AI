@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 
+// Set LangChain configuration
+process.env.LANGCHAIN_CALLBACKS_BACKGROUND = "true";
+
 const nextConfig = {
     images: {
         domains: ['images.unsplash.com'],

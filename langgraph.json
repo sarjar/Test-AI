@@ -1,0 +1,140 @@
+{
+    "langsmith": {
+        "project_name": "high-dividend-ai-trading",
+        "api_url": "https://api.smith.langchain.com",
+        "tracing_v2": true,
+        "tracing_sample_rate": 0.8,
+        "tags": ["trading", "dividend", "ai", "financial"]
+    },
+    "deployment": {
+        "type": "cloud",
+        "region": "us-west-2",
+        "environment": "production",
+        "auto_scaling": {
+            "min_instances": 2,
+            "max_instances": 10
+        },
+        "resources": {
+            "cpu": "2",
+            "memory": "4Gi",
+            "gpu": "none"
+        }
+    },
+    "monitoring": {
+        "enabled": true,
+        "metrics": {
+            "latency": true,
+            "throughput": true,
+            "error_rate": true,
+            "memory_usage": true,
+            "cpu_usage": true,
+            "api_calls": true,
+            "trading_metrics": true
+        },
+        "alerts": {
+            "error_threshold": 0.02,
+            "latency_threshold_ms": 500,
+            "memory_threshold_percent": 80,
+            "cpu_threshold_percent": 70
+        },
+        "dashboards": {
+            "trading_performance": true,
+            "system_health": true,
+            "api_usage": true
+        }
+    },
+    "logging": {
+        "level": "DEBUG",
+        "format": "json",
+        "retention_days": 90,
+        "log_groups": {
+            "trading": true,
+            "system": true,
+            "api": true
+        },
+        "alert_on": {
+            "error": true,
+            "warning": true,
+            "critical": true
+        }
+    },
+    "security": {
+        "encryption": {
+            "at_rest": true,
+            "in_transit": true
+        },
+        "authentication": {
+            "required": true,
+            "method": "api_key"
+        },
+        "rate_limiting": {
+            "enabled": true,
+            "requests_per_minute": 100
+        }
+    },
+    "name": "High Dividend ETF Analysis Workflow",
+    "version": "1.0.0",
+    "description": "A workflow for analyzing high-dividend ETFs with error handling and retry mechanisms",
+    "nodes": {
+        "guard_intent": {
+            "type": "entry",
+            "description": "Validates and processes user input intent",
+            "next": ["load_preferences", "handle_error"]
+        },
+        "load_preferences": {
+            "type": "process",
+            "description": "Loads user preferences and investment criteria",
+            "next": ["generate_search_terms", "handle_error"]
+        },
+        "generate_search_terms": {
+            "type": "process",
+            "description": "Generates search terms based on user preferences",
+            "next": ["scrape_data", "handle_error"]
+        },
+        "scrape_data": {
+            "type": "process",
+            "description": "Scrapes ETF data from various sources",
+            "next": ["summarize_data", "handle_error"]
+        },
+        "summarize_data": {
+            "type": "process",
+            "description": "Analyzes and summarizes ETF data",
+            "next": ["format_report", "handle_error"]
+        },
+        "format_report": {
+            "type": "process",
+            "description": "Formats the final analysis report",
+            "next": ["END", "handle_error"]
+        },
+        "handle_error": {
+            "type": "error",
+            "description": "Handles workflow errors and manages retry logic",
+            "next": ["retry", "END"]
+        },
+        "retry": {
+            "type": "recovery",
+            "description": "Prepares workflow for retry attempt",
+            "next": ["guard_intent"]
+        }
+    },
+    "error_handling": {
+        "conditions": {
+            "shouldHandleError": "state.error !== undefined",
+            "shouldRetry": "state.status === 'retrying'"
+        },
+        "recovery_strategy": {
+            "type": "full_retry",
+            "description": "Clears error state and restarts from beginning"
+        }
+    },
+    "state_schema": {
+        "userInput": "string",
+        "status": "enum(start|error|retrying|preferences|search|scrape|summarize|format|email|complete)",
+        "error": "string?",
+        "preferences": "UserPreferences?",
+        "searchTerms": "SearchTerm[]?",
+        "scrapedData": "ETFData[]?",
+        "summary": "SummaryReport?",
+        "report": "SummaryReport?"
+    }
+} 
