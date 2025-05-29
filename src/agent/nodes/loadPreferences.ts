@@ -1,5 +1,12 @@
 import { WorkflowState, UserPreferences } from "../types";
 
+/**
+ * Load Preferences Node
+ *
+ * Extracts and validates user preferences from research requests
+ * Converts input data into structured UserPreferences format
+ */
+
 const loadPreferencesNode = async (
   state: WorkflowState,
 ): Promise<WorkflowState> => {

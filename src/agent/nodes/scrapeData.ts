@@ -1,6 +1,13 @@
 import { WorkflowState, ETFData } from "../types";
 import orchestrateScraping from "../tools/orchestrateScraping";
 
+/**
+ * Scrape Data Node
+ *
+ * Orchestrates data collection from multiple financial sources
+ * Aggregates and deduplicates ETF data based on search terms
+ */
+
 const scrapeDataNode = async (state: WorkflowState): Promise<WorkflowState> => {
   try {
     if (!state.searchTerms || !state.preferences) {

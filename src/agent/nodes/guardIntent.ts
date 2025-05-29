@@ -5,6 +5,13 @@ import {
   isValidRegions,
 } from "../types";
 
+/**
+ * Guard Intent Node
+ *
+ * Validates input and determines workflow path (research vs general chat)
+ * Performs input validation and routing logic
+ */
+
 const guardIntentNode = async (
   state: WorkflowState,
 ): Promise<WorkflowState> => {

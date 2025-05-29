@@ -1,6 +1,13 @@
 import { WorkflowState } from "../types";
 import getOpenAIClient from "../tools/openAIClient";
 
+/**
+ * Generate Search Terms Node
+ *
+ * Creates optimized search queries based on user preferences
+ * Uses OpenAI to generate relevant search terms for data scraping
+ */
+
 const generateSearchTermsNode = async (
   state: WorkflowState,
 ): Promise<WorkflowState> => {

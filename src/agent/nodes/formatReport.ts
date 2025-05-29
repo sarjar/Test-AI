@@ -1,5 +1,12 @@
 import { WorkflowState, SummaryReport } from "../types";
 
+/**
+ * Format Report Node
+ *
+ * Creates final formatted report with metadata and recommendations
+ * Generates user-friendly summary with investment insights
+ */
+
 const formatReportNode = async (
   state: WorkflowState,
 ): Promise<WorkflowState> => {

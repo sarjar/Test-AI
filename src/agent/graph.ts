@@ -1,5 +1,7 @@
 import { END, StateGraph } from "@langchain/langgraph";
 import { ResearchRequest, WorkflowState } from "./types";
+
+// Import workflow nodes
 import guardIntentNode from "./nodes/guardIntent";
 import loadPreferencesNode from "./nodes/loadPreferences";
 import generateSearchTermsNode from "./nodes/generateSearchTerms";
@@ -29,7 +31,10 @@ import generalChatNode from "./nodes/generalChat";
 //
 // -----------------------------------------------------------------------------
 
-// Error handling nodes
+/**
+ * Error handling node for workflow failures
+ * Ensures consistent error state formatting
+ */
 const handleErrorNode = async (
   state: WorkflowState,
 ): Promise<WorkflowState> => {
@@ -40,7 +45,10 @@ const handleErrorNode = async (
   };
 };
 
-// Define the state annotation using the modern LangGraph approach
+/**
+ * Define the workflow state graph using LangGraph
+ * Manages state transitions between different workflow nodes
+ */
 const workflowGraph = new StateGraph<WorkflowState>({
   channels: {
     userInput: {
@@ -86,7 +94,7 @@ const workflowGraph = new StateGraph<WorkflowState>({
   },
 });
 
-// Add main workflow nodes
+// Register workflow nodes
 workflowGraph.addNode("guard_intent", guardIntentNode);
 workflowGraph.addNode("load_preferences", loadPreferencesNode);
 workflowGraph.addNode("generate_search_terms", generateSearchTermsNode);
@@ -96,10 +104,10 @@ workflowGraph.addNode("format_report", formatReportNode);
 workflowGraph.addNode("general_chat", generalChatNode);
 workflowGraph.addNode("handle_error", handleErrorNode);
 
-// Set the entry point
+// Configure workflow entry point
 workflowGraph.setEntryPoint("guard_intent");
 
-// Add edges for research path
+// Configure conditional routing for research workflow
 workflowGraph.addConditionalEdges(
   "guard_intent",
   (state: WorkflowState) => {
@@ -172,7 +180,7 @@ workflowGraph.addConditionalEdges(
   },
 );
 
-// Add edges for chat path
+// Configure routing for general chat workflow
 workflowGraph.addConditionalEdges(
   "general_chat",
   (state: WorkflowState) => {
@@ -184,11 +192,18 @@ workflowGraph.addConditionalEdges(
   },
 );
 
-// Add error handling edge
+// Configure error handling termination
 workflowGraph.addEdge("handle_error", END);
 
+// Compile the workflow graph
 const compiledGraph = workflowGraph.compile();
 
+/**
+ * Main workflow execution function
+ * Handles both research requests and general chat queries
+ * @param request - Either a string for chat or ResearchRequest object for research
+ * @returns Promise<WorkflowState> - Final workflow state
+ */
 export async function runAgentWorkflow(request: string | ResearchRequest) {
   const initialState: WorkflowState = {
     userInput: typeof request === "string" ? request : undefined,

@@ -1,5 +1,12 @@
 import { ChatOpenAI } from "@langchain/openai";
 
+/**
+ * OpenAI Client Configuration
+ *
+ * Creates and configures ChatOpenAI instance for LLM operations
+ * Handles API key validation and client settings
+ */
+
 const getOpenAIClient = () => {
   const apiKey = process.env.OPENAI_API_KEY;
 
@@ -10,10 +17,11 @@ const getOpenAIClient = () => {
   }
 
   return new ChatOpenAI({
-    modelName: "gpt-4o",
-    temperature: 0.7,
-    maxRetries: 3,
-    timeout: 30000,
+    modelName: "gpt-4o-mini",
+    temperature: 0.3,
+    maxRetries: 2,
+    timeout: 20000,
+    maxTokens: 1000,
     openAIApiKey: apiKey,
   });
 };

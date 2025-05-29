@@ -9,66 +9,168 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      investment_preferences: {
+      agent_interactions: {
+        Row: {
+          created_at: string
+          error: string | null
+          id: string
+          input: string
+          preferences: Json | null
+          result: Json | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          input: string
+          preferences?: Json | null
+          result?: Json | null
+          status: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          input?: string
+          preferences?: Json | null
+          result?: Json | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      chat_history: {
         Row: {
           created_at: string | null
           id: string
+          query: string
+          response: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          query: string
+          response: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          query?: string
+          response?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      investment_preferences: {
+        Row: {
           regions: string[]
           sectors: string[]
-          updated_at: string | null
+          updated_at: string
           user_id: string
           yield_max: number
           yield_min: number
         }
         Insert: {
-          created_at?: string | null
-          id?: string
-          regions?: string[]
-          sectors?: string[]
-          updated_at?: string | null
+          regions: string[]
+          sectors: string[]
+          updated_at?: string
           user_id: string
-          yield_max?: number
-          yield_min?: number
+          yield_max: number
+          yield_min: number
         }
         Update: {
-          created_at?: string | null
-          id?: string
           regions?: string[]
           sectors?: string[]
-          updated_at?: string | null
+          updated_at?: string
           user_id?: string
           yield_max?: number
           yield_min?: number
         }
         Relationships: []
       }
-      research_reports: {
+      investment_reports: {
         Row: {
+          content: string
           created_at: string | null
-          email_sent: boolean | null
           id: string
-          summary: string
+          preferences: Json
           title: string
-          top_picks: Json
+          updated_at: string | null
           user_id: string
         }
         Insert: {
+          content: string
           created_at?: string | null
-          email_sent?: boolean | null
           id?: string
-          summary: string
+          preferences?: Json
           title: string
-          top_picks: Json
+          updated_at?: string | null
           user_id: string
         }
         Update: {
+          content?: string
           created_at?: string | null
-          email_sent?: boolean | null
           id?: string
-          summary?: string
+          preferences?: Json
           title?: string
-          top_picks?: Json
+          updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      rate_limits: {
+        Row: {
+          action: string
+          created_at: string | null
+          id: string
+          identifier: string
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          id?: string
+          identifier: string
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          id?: string
+          identifier?: string
+        }
+        Relationships: []
+      }
+      reports: {
+        Row: {
+          content: string | null
+          created_at: string | null
+          id: string
+          preferences: Json | null
+          title: string | null
+          user_id: string | null
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string | null
+          id?: string
+          preferences?: Json | null
+          title?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          content?: string | null
+          created_at?: string | null
+          id?: string
+          preferences?: Json | null
+          title?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -116,7 +218,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      ensure_rate_limits_table: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

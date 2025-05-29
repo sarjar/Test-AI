@@ -1,12 +1,12 @@
-import { Footer, Navbar } from '@/components/layout';
-import { Hero } from '@/components/layout/Hero';
+import { Navbar } from "@/components/layout";
+import { Hero } from "@/components/layout/Hero";
 import {
   ArrowUpRight,
   BarChart3,
   CheckCircle2,
   FileText,
   Mail,
-  Search
+  Search,
 } from "lucide-react";
 
 export default async function Home() {
@@ -21,24 +21,42 @@ export default async function Home() {
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold mb-4">How It Works</h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              Our AI-powered research assistant follows a structured workflow to deliver personalized investment insights.
+              Our AI-powered research assistant follows a structured workflow to
+              deliver personalized investment insights.
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-12">
             <div className="flex flex-col items-center text-center">
-              <div className="bg-blue-50 rounded-full p-4 mb-4"><Search className="w-8 h-8 text-blue-600" /></div>
-              <h3 className="text-xl font-semibold mb-2">1. Specify Preferences</h3>
-              <p className="text-gray-600">Tell our AI about your investment goals, risk tolerance, and preferences for sectors, regions, or dividend yields.</p>
+              <div className="bg-blue-50 rounded-full p-4 mb-4">
+                <Search className="w-8 h-8 text-blue-600" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">
+                1. Specify Preferences
+              </h3>
+              <p className="text-gray-600">
+                Tell our AI about your investment goals, risk tolerance, and
+                preferences for sectors, regions, or dividend yields.
+              </p>
             </div>
             <div className="flex flex-col items-center text-center">
-              <div className="bg-blue-50 rounded-full p-4 mb-4"><BarChart3 className="w-8 h-8 text-blue-600" /></div>
+              <div className="bg-blue-50 rounded-full p-4 mb-4">
+                <BarChart3 className="w-8 h-8 text-blue-600" />
+              </div>
               <h3 className="text-xl font-semibold mb-2">2. AI Research</h3>
-              <p className="text-gray-600">Our LangGraph workflow searches for relevant data, analyzes market trends, and identifies matching investment opportunities.</p>
+              <p className="text-gray-600">
+                Our LangGraph workflow searches for relevant data, analyzes
+                market trends, and identifies matching investment opportunities.
+              </p>
             </div>
             <div className="flex flex-col items-center text-center">
-              <div className="bg-blue-50 rounded-full p-4 mb-4"><FileText className="w-8 h-8 text-blue-600" /></div>
+              <div className="bg-blue-50 rounded-full p-4 mb-4">
+                <FileText className="w-8 h-8 text-blue-600" />
+              </div>
               <h3 className="text-xl font-semibold mb-2">3. Review Report</h3>
-              <p className="text-gray-600">Receive a comprehensive investment report with tables of ETFs/stocks matching your criteria and detailed analysis.</p>
+              <p className="text-gray-600">
+                Receive a comprehensive investment report with tables of
+                ETFs/stocks matching your criteria and detailed analysis.
+              </p>
             </div>
           </div>
         </div>
@@ -170,7 +188,9 @@ export default async function Home() {
         <div className="container mx-auto px-4 py-6 grid gap-8 text-sm">
           <div className="flex flex-col items-center justify-center">
             <div className="font-bold text-lg mb-2">AI Agents Company</div>
-            <div className="text-gray-500">© 2025 AI Agents Company. All rights reserved.</div>
+            <div className="text-gray-500">
+              © 2025 AI Agents Company. All rights reserved.
+            </div>
           </div>
         </div>
       </footer>

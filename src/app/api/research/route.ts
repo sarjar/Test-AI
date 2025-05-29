@@ -1,6 +1,13 @@
-// This endpoint triggers the Research Report workflow (research path)
-// Input: { sectors: string[], regions: string[], yieldRange: [number, number] }
-// Output: { report, metadata }
+/**
+ * Research Report API Endpoint
+ *
+ * Triggers the Research Report workflow for generating investment analysis
+ * Processes user preferences and returns comprehensive ETF recommendations
+ *
+ * @route POST /api/research
+ * @body { sectors: string[], regions: string[], yieldRange: [number, number] }
+ * @returns { report: SummaryReport, status: string, metadata: object }
+ */
 
 import { NextRequest, NextResponse } from "next/server";
 import { runAgentWorkflow } from "@/agent/graph";

@@ -7,27 +7,24 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { HelpCircle } from "lucide-react";
 import { createClient } from "@/supabase/client";
 import ChatInterface from "@/components/etf/ChatInterface";
 import ReactMarkdown from "react-markdown";
 
-const sectors = [
-  { id: "technology", label: "Technology" },
-  { id: "energy", label: "Energy" },
-  { id: "finance", label: "Finance" },
-  { id: "healthcare", label: "Healthcare" },
-  { id: "consumer", label: "Consumer Goods" },
-  { id: "utilities", label: "Utilities" },
-  { id: "realestate", label: "Real Estate" },
-];
+import {
+  INVESTMENT_OPTIONS,
+  API_ENDPOINTS,
+  UI_MESSAGES,
+} from "@/lib/constants";
 
-const regions = [
-  { id: "usa", label: "USA" },
-  { id: "europe", label: "Europe" },
-  { id: "asia", label: "Asia" },
-  { id: "global", label: "Global" },
-  { id: "emerging", label: "Emerging Markets" },
-];
+const { SECTORS: sectors, REGIONS: regions } = INVESTMENT_OPTIONS;
 
 export default function ResearchForm() {
   const [selectedSectors, setSelectedSectors] = useState<string[]>([
@@ -100,7 +97,7 @@ export default function ResearchForm() {
       }
 
       // Call the research API
-      const response = await fetch("/api/research", {
+      const response = await fetch(API_ENDPOINTS.RESEARCH, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -202,7 +199,21 @@ export default function ResearchForm() {
           </div>
 
           <div>
-            <h3 className="text-lg font-medium mb-3">Dividend Yield Range</h3>
+            <div className="flex items-center gap-2 mb-3">
+              <h3 className="text-lg font-medium">Dividend Yield Range</h3>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="max-w-xs">
+                      {UI_MESSAGES.DIVIDEND_YIELD_TOOLTIP}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
             <div className="px-2">
               <Slider
                 defaultValue={[yieldRange[0], yieldRange[1]]}

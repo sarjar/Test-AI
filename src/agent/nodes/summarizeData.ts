@@ -1,6 +1,13 @@
 import { WorkflowState } from "../types";
 import getOpenAIClient from "../tools/openAIClient";
 
+/**
+ * Summarize Data Node
+ *
+ * Analyzes scraped ETF data and generates investment insights
+ * Uses OpenAI to create comprehensive market analysis
+ */
+
 const summarizeDataNode = async (
   state: WorkflowState,
 ): Promise<WorkflowState> => {

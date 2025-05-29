@@ -4,8 +4,20 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { SendIcon, Loader2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { SendIcon, Loader2, Trash2 } from "lucide-react";
 import { createClient } from "@/supabase/client";
+import { API_ENDPOINTS, UI_MESSAGES, CHAT_CONFIG } from "@/lib/constants";
 
 type Message = {
   id: string;
@@ -18,6 +30,8 @@ export default function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isClearingHistory, setIsClearingHistory] = useState(false);
+  const [showClearDialog, setShowClearDialog] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
 
@@ -35,7 +49,7 @@ export default function ChatInterface() {
             .select("*")
             .eq("user_id", user.id)
             .order("created_at", { ascending: true })
-            .limit(10);
+            .limit(CHAT_CONFIG.MAX_HISTORY_ITEMS);
 
           if (error) {
             // If table doesn't exist or other error, just show welcome message
@@ -44,8 +58,7 @@ export default function ChatInterface() {
               {
                 id: "welcome",
                 role: "assistant",
-                content:
-                  "Hello! I'm your investment research assistant. Ask me about dividend ETFs, stocks, or investment strategies.",
+                content: UI_MESSAGES.WELCOME,
                 timestamp: new Date(),
               },
             ]);
@@ -53,25 +66,25 @@ export default function ChatInterface() {
           }
 
           if (data && data.length > 0) {
-            const formattedMessages = data
-              .map((item) => ({
-                id: item.id,
-                role: "user" as const,
+            const formattedMessages: Message[] = [];
+
+            data.forEach((item) => {
+              // Add user message
+              formattedMessages.push({
+                id: `user-${item.id}`,
+                role: "user",
                 content: item.query,
                 timestamp: new Date(item.created_at),
-              }))
-              .flatMap((userMsg, index) => {
-                const correspondingData = data[index];
-                return [
-                  userMsg,
-                  {
-                    id: `response-${userMsg.id}`,
-                    role: "assistant" as const,
-                    content: correspondingData.response,
-                    timestamp: new Date(correspondingData.created_at),
-                  },
-                ];
               });
+
+              // Add assistant response
+              formattedMessages.push({
+                id: `assistant-${item.id}`,
+                role: "assistant",
+                content: item.response,
+                timestamp: new Date(item.created_at),
+              });
+            });
 
             setMessages(formattedMessages);
           } else {
@@ -80,8 +93,7 @@ export default function ChatInterface() {
               {
                 id: "welcome",
                 role: "assistant",
-                content:
-                  "Hello! I'm your investment research assistant. Ask me about dividend ETFs, stocks, or investment strategies.",
+                content: UI_MESSAGES.WELCOME,
                 timestamp: new Date(),
               },
             ]);
@@ -93,8 +105,7 @@ export default function ChatInterface() {
             {
               id: "welcome",
               role: "assistant",
-              content:
-                "Hello! I'm your investment research assistant. Ask me about dividend ETFs, stocks, or investment strategies.",
+              content: UI_MESSAGES.WELCOME,
               timestamp: new Date(),
             },
           ]);
@@ -105,8 +116,7 @@ export default function ChatInterface() {
           {
             id: "welcome",
             role: "assistant",
-            content:
-              "Hello! I'm your investment research assistant. Ask me about dividend ETFs, stocks, or investment strategies.",
+            content: UI_MESSAGES.WELCOME,
             timestamp: new Date(),
           },
         ]);
@@ -121,6 +131,40 @@ export default function ChatInterface() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Clear chat history function
+  const handleClearHistory = async () => {
+    setIsClearingHistory(true);
+    setShowClearDialog(false);
+
+    try {
+      const response = await fetch(API_ENDPOINTS.CHAT_CLEAR, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to clear chat history");
+      }
+
+      // Clear local messages and show welcome message
+      setMessages([
+        {
+          id: "welcome",
+          role: "assistant",
+          content: UI_MESSAGES.WELCOME,
+          timestamp: new Date(),
+        },
+      ]);
+    } catch (error) {
+      console.error("Error clearing chat history:", error);
+      alert("Failed to clear chat history. Please try again.");
+    } finally {
+      setIsClearingHistory(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
@@ -132,17 +176,18 @@ export default function ChatInterface() {
       timestamp: new Date(),
     };
 
+    const currentInput = input.trim();
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/chat", {
+      const response = await fetch(API_ENDPOINTS.CHAT, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ query: input }),
+        body: JSON.stringify({ query: currentInput }),
       });
 
       const data = await response.json();
@@ -180,6 +225,41 @@ export default function ChatInterface() {
 
   return (
     <Card className="flex flex-col h-[600px] w-full">
+      {/* Chat Header with Clear Button */}
+      <div className="flex items-center justify-between p-4 border-b">
+        <h3 className="text-lg font-semibold">AI Investment Consultant</h3>
+        <AlertDialog open={showClearDialog} onOpenChange={setShowClearDialog}>
+          <AlertDialogTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={isClearingHistory || messages.length <= 1}
+              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              {isClearingHistory ? "Clearing..." : "Clear History"}
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Clear Chat History</AlertDialogTitle>
+              <AlertDialogDescription>
+                {UI_MESSAGES.CLEAR_HISTORY_CONFIRM}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleClearHistory}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                Clear History
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((message) => (
           <div
@@ -201,7 +281,7 @@ export default function ChatInterface() {
             <div className="max-w-[80%] rounded-lg p-3 bg-muted">
               <div className="flex items-center space-x-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Thinking...</span>
+                <span>{UI_MESSAGES.LOADING}</span>
               </div>
             </div>
           </div>

@@ -1,8 +1,15 @@
 import { WorkflowState } from "../types";
 import getOpenAIClient from "../tools/openAIClient";
 
+/**
+ * General chat node for AI consultant functionality
+ * Handles user queries about finance and investment topics
+ */
+
+// System prompt for AI financial consultant
 const systemPrompt = `You are a helpful, friendly AI financial consultant specializing in real-time market analysis. You provide current, up-to-date information about dividend ETFs, stocks, and investment strategies based on live market data. Always emphasize that your recommendations are based on real-time market conditions. If the question is not about finance, politely redirect the user to ask about dividend ETFs, stocks, or investment strategies. Always end with a suggestion for a follow-up question or action.`;
 
+// Common greeting patterns for detection
 const greetings = [
   "hi",
   "hello",
@@ -13,6 +20,7 @@ const greetings = [
   "greetings",
 ];
 
+// Financial keywords for topic detection
 const financeKeywords = [
   "etf",
   "dividend",
@@ -61,6 +69,7 @@ const financeKeywords = [
   "industry",
 ];
 
+// Follow-up suggestions for user engagement
 const suggestions = [
   "Would you like real-time analysis of the top dividend ETFs?",
   "Ask me about building a diversified portfolio with current market data!",
@@ -71,10 +80,16 @@ const suggestions = [
   "Would you like to explore current sector-specific ETF performance?",
 ];
 
+/**
+ * Get a random follow-up suggestion for user engagement
+ */
 function getRandomSuggestion(): string {
   return suggestions[Math.floor(Math.random() * suggestions.length)];
 }
 
+/**
+ * Check if user input is a greeting
+ */
 function isGreeting(input: string): boolean {
   const normalizedInput = input.toLowerCase().trim();
   return greetings.some(
@@ -86,11 +101,17 @@ function isGreeting(input: string): boolean {
   );
 }
 
+/**
+ * Check if user input is finance-related
+ */
 function isFinanceRelated(input: string): boolean {
   const normalizedInput = input.toLowerCase();
   return financeKeywords.some((keyword) => normalizedInput.includes(keyword));
 }
 
+/**
+ * Sanitize user input by trimming and normalizing whitespace
+ */
 function sanitizeInput(input: string): string {
   return input.trim().replace(/\s+/g, " ");
 }
