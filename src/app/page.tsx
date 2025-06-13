@@ -89,11 +89,11 @@ export default async function Home() {
             <div className="md:flex">
               <div className="md:flex-1 p-8">
                 <h2 className="text-2xl font-bold mb-6">
-                  Start Your Dividend Research
+                  Start Your Dividend Investment Research
                 </h2>
                 <p className="text-gray-600 mb-6">
                   Enter your investment preferences below to receive
-                  personalized dividend stock and ETF recommendations.
+                  personalized dividend ETF and stock recommendations.
                 </p>
                 <div className="space-y-4">
                   <div>
@@ -158,7 +158,7 @@ export default async function Home() {
                   <ul className="space-y-4 text-left">
                     <li className="flex items-start">
                       <CheckCircle2 className="w-5 h-5 mr-2 flex-shrink-0 mt-0.5" />
-                      <span>Personalized dividend stock recommendations</span>
+                      <span>Personalized ETF and stock recommendations</span>
                     </li>
                     <li className="flex items-start">
                       <CheckCircle2 className="w-5 h-5 mr-2 flex-shrink-0 mt-0.5" />

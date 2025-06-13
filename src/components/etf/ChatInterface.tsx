@@ -289,21 +289,27 @@ export default function ChatInterface() {
         <div ref={messagesEndRef} />
       </div>
 
-      <form
-        onSubmit={handleSubmit}
-        className="border-t p-4 flex items-center space-x-2"
-      >
-        <Input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask about dividend ETFs, stocks, or investment strategies..."
-          disabled={isLoading}
-          className="flex-1"
-        />
-        <Button type="submit" size="icon" disabled={isLoading || !input.trim()}>
-          <SendIcon className="h-4 w-4" />
-        </Button>
-      </form>
+      <div className="border-t">
+        <form
+          onSubmit={handleSubmit}
+          className="p-4 flex items-center space-x-2"
+        >
+          <Input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Ask me about dividend ETFs, stocks, investment strategies, or market analysis..."
+            disabled={isLoading}
+            className="flex-1"
+          />
+          <Button
+            type="submit"
+            size="icon"
+            disabled={isLoading || !input.trim()}
+          >
+            <SendIcon className="h-4 w-4" />
+          </Button>
+        </form>
+      </div>
     </Card>
   );
 }

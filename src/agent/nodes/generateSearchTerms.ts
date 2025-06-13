@@ -41,12 +41,16 @@ const generateSearchTermsNode = async (
 
     const llm = getOpenAIClient();
 
-    const prompt = `Generate 3-5 specific search terms for finding current high dividend ETFs with real-time market data based on these preferences:
+    const investmentTypeText = state.preferences.investmentTypes.join(" and ");
+    const prompt = `Generate 3-4 optimized search terms for finding real-time high dividend ${investmentTypeText} data based on these preferences:
+    - Investment Types: ${state.preferences.investmentTypes.join(", ")}
     - Sectors: ${state.preferences.sectors.join(", ")}
     - Regions: ${state.preferences.regions.join(", ")}
     - Yield Range: ${state.preferences.yieldMin}% to ${state.preferences.yieldMax}%
+    ${state.preferences.marketCapRange ? `- Market Cap Range: ${state.preferences.marketCapRange[0]}B to ${state.preferences.marketCapRange[1]}B` : ""}
+    ${state.preferences.peRatioMax ? `- Max P/E Ratio: ${state.preferences.peRatioMax}` : ""}
     
-    Focus on terms that will help find live, current market data for dividend ETFs. Include terms that financial data sources would use for real-time ETF information.
+    Focus on terms that work well with financial APIs like Alpha Vantage for real-time market data. Use specific symbols and sector keywords that financial data providers recognize.
     
     Format each search term on a new line.`;
 

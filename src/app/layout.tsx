@@ -7,8 +7,8 @@ import Script from "next/script";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "High Dividend AI",
-  description: "AI-powered dividend stock research",
+  title: "Dividend Investment AI",
+  description: "AI-powered dividend ETF and stock research platform",
 };
 
 export default function RootLayout({

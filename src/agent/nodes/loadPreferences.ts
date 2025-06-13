@@ -38,6 +38,9 @@ const loadPreferencesNode = async (
       regions: input.regions,
       yieldMin: input.yieldRange[0],
       yieldMax: input.yieldRange[1],
+      investmentTypes: input.investmentTypes || ["ETF", "STOCK"],
+      marketCapRange: input.marketCapRange,
+      peRatioMax: input.peRatioMax,
     };
 
     return {

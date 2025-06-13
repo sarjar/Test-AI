@@ -19,12 +19,12 @@ const summarizeDataNode = async (
     // Check if OpenAI API key is available before proceeding
     if (!process.env.OPENAI_API_KEY) {
       const topPicks = (state.scrapedData ?? [])
-        .filter((etf) => etf.dividendYield !== undefined)
+        .filter((investment) => investment.dividendYield !== undefined)
         .sort((a, b) => b.dividendYield - a.dividendYield)
         .slice(0, 5);
 
       const fallbackSummary =
-        "Analysis completed using available market data. The ETFs below have been selected based on dividend yield performance and sector diversification.";
+        "Analysis completed using available market data. The investments below have been selected based on dividend yield performance and sector diversification.";
 
       return {
         ...state,
@@ -39,17 +39,23 @@ const summarizeDataNode = async (
 
     const llm = getOpenAIClient();
 
-    const prompt = `You are a financial analyst specializing in real-time market data analysis. Analyze this current ETF data and provide investment recommendations based on live market conditions. Emphasize that this analysis is based on real-time market data and current dividend yields.
+    const etfCount =
+      state.scrapedData?.filter((inv) => inv.type === "ETF").length || 0;
+    const stockCount =
+      state.scrapedData?.filter((inv) => inv.type === "STOCK").length || 0;
 
-ETF Data: ${JSON.stringify(state.scrapedData)}
+    const prompt = `You are a financial analyst specializing in real-time market data analysis. Analyze this current investment data (${etfCount} ETFs and ${stockCount} stocks) and provide investment recommendations based on live market conditions. Emphasize that this analysis is based on real-time market data and current dividend yields.
+
+Investment Data: ${JSON.stringify(state.scrapedData)}
 
 Please provide:
-1. A summary of the current market opportunities
-2. Analysis of dividend yields and trends
+1. A summary of the current market opportunities for both ETFs and individual stocks
+2. Analysis of dividend yields and trends across both investment types
 3. Investment recommendations based on this real-time data
 4. Risk considerations for the current market environment
+5. Comparison between ETF and stock opportunities
 
-Focus on the fact that this is live, current market data and analysis.`;
+Focus on the fact that this is live, current market data and analysis covering both ETFs and dividend-paying stocks.`;
 
     const response = await llm.invoke(prompt);
 
@@ -78,9 +84,9 @@ Focus on the fact that this is live, current market data and analysis.`;
     }
 
     const topPicks = (state.scrapedData ?? [])
-      .filter((etf) => etf.dividendYield !== undefined)
+      .filter((investment) => investment.dividendYield !== undefined)
       .sort((a, b) => b.dividendYield - a.dividendYield)
-      .slice(0, 5);
+      .slice(0, 8);
 
     return {
       ...state,

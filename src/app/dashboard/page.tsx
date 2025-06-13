@@ -1,5 +1,5 @@
-import { ResearchForm } from '@/components/etf';
-import { DashboardNavbar } from '@/components/layout';
+import { ResearchForm } from "@/components/etf";
+import { DashboardNavbar } from "@/components/layout";
 import { LineChart, UserCircle } from "lucide-react";
 import { redirect } from "next/navigation";
 import { createClient } from "../../../supabase/server";
@@ -30,7 +30,7 @@ export default async function Dashboard() {
                 </h2>
                 <p className="text-sm text-muted-foreground">
                   Customize your preferences to generate personalized dividend
-                  ETF recommendations
+                  ETF and stock recommendations
                 </p>
               </div>
             </div>

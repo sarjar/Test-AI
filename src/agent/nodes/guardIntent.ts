@@ -18,7 +18,8 @@ const guardIntentNode = async (
   try {
     // Check for direct research request first
     if (state.researchRequest) {
-      const { sectors, regions, yieldRange } = state.researchRequest;
+      const { sectors, regions, yieldRange, investmentTypes } =
+        state.researchRequest;
 
       if (!isValidSectors(sectors)) {
         return {
@@ -74,6 +75,10 @@ const guardIntentNode = async (
 
         // Check if this is a research request
         if (input.sectors && input.regions && input.yieldRange) {
+          // Set default investment types if not provided
+          if (!input.investmentTypes) {
+            input.investmentTypes = ["ETF", "STOCK"];
+          }
           if (!isValidSectors(input.sectors)) {
             return {
               ...state,

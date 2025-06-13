@@ -15,7 +15,14 @@ import { ResearchRequest, WorkflowState } from "@/agent/types";
 
 export async function POST(req: Request) {
   try {
-    const { sectors, regions, yieldRange } = await req.json();
+    const {
+      investmentTypes,
+      sectors,
+      regions,
+      yieldRange,
+      marketCapRange,
+      peRatioMax,
+    } = await req.json();
 
     // Validate input
     if (!sectors || !regions || !yieldRange) {
@@ -41,9 +48,12 @@ export async function POST(req: Request) {
 
     // Format the input for the workflow
     const researchRequest: ResearchRequest = {
+      investmentTypes: (investmentTypes as string[]) || ["ETF", "STOCK"],
       sectors: sectors as string[],
       regions: regions as string[],
       yieldRange: yieldRange as [number, number],
+      marketCapRange: marketCapRange as [number, number] | undefined,
+      peRatioMax: peRatioMax as number | undefined,
       timestamp: new Date().toISOString(),
     };
 
@@ -113,8 +123,12 @@ export async function POST(req: Request) {
           scrapedData: state.scrapedData,
           metadata: {
             timestamp: researchRequest.timestamp,
-            totalETFsAnalyzed: state.scrapedData.length,
+            totalInvestmentsAnalyzed: state.scrapedData.length,
             dataQuality: "partial",
+            etfCount: state.scrapedData.filter((inv) => inv.type === "ETF")
+              .length,
+            stockCount: state.scrapedData.filter((inv) => inv.type === "STOCK")
+              .length,
           },
         });
       }
@@ -129,10 +143,12 @@ export async function POST(req: Request) {
           topPicks: state.summary.topPicks || [],
           timestamp: new Date().toISOString(),
           metadata: {
-            totalETFsAnalyzed: 0,
+            totalInvestmentsAnalyzed: 0,
             averageYield: 0,
             topSectors: [],
             dataQuality: "low",
+            etfCount: 0,
+            stockCount: 0,
           },
         };
 
@@ -160,10 +176,13 @@ export async function POST(req: Request) {
       status: "success",
       metadata: {
         timestamp: researchRequest.timestamp,
-        totalETFsAnalyzed: state.report?.metadata?.totalETFsAnalyzed || 0,
+        totalInvestmentsAnalyzed:
+          state.report?.metadata?.totalInvestmentsAnalyzed || 0,
         averageYield: state.report?.metadata?.averageYield || 0,
         topSectors: state.report?.metadata?.topSectors || [],
         dataQuality: state.report?.metadata?.dataQuality || "unknown",
+        etfCount: state.report?.metadata?.etfCount || 0,
+        stockCount: state.report?.metadata?.stockCount || 0,
       },
     });
   } catch (error) {

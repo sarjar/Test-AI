@@ -6,6 +6,10 @@ export interface UserPreferences {
   regions: string[];
   yieldMin: number;
   yieldMax: number;
+  investmentTypes: ("ETF" | "STOCK")[];
+  // Stock-specific preferences
+  marketCapRange?: [number, number]; // in billions
+  peRatioMax?: number;
 }
 
 /**
@@ -17,9 +21,9 @@ export interface SearchTerm {
 }
 
 /**
- * ETF data structure from scraping operations
+ * Investment data structure for both ETFs and stocks
  */
-export interface ETFData {
+export interface InvestmentData {
   symbol: string;
   name: string;
   dividendYield: number;
@@ -30,10 +34,21 @@ export interface ETFData {
   source: string;
   timestamp: string;
   region?: string;
+  type: "ETF" | "STOCK";
+  // ETF-specific fields
   expenseRatio?: number;
   aum?: number; // Assets Under Management
   inceptionDate?: string;
+  // Stock-specific fields
+  peRatio?: number;
+  eps?: number;
+  beta?: number;
 }
+
+/**
+ * @deprecated Use InvestmentData instead
+ */
+export type ETFData = InvestmentData;
 
 /**
  * Summary report generated from analysis
@@ -41,13 +56,15 @@ export interface ETFData {
 export interface SummaryReport {
   title?: string;
   summary: string;
-  topPicks: ETFData[];
+  topPicks: InvestmentData[];
   timestamp: string;
   metadata?: {
-    totalETFsAnalyzed: number;
+    totalInvestmentsAnalyzed: number;
     averageYield: number;
     topSectors: string[];
     dataQuality: "high" | "medium" | "low";
+    etfCount: number;
+    stockCount: number;
   };
 }
 
@@ -58,6 +75,9 @@ export interface ResearchRequest {
   sectors: string[];
   regions: string[];
   yieldRange: [number, number];
+  investmentTypes: ("ETF" | "STOCK")[];
+  marketCapRange?: [number, number];
+  peRatioMax?: number;
   timestamp: string;
 }
 
@@ -75,12 +95,34 @@ export type WorkflowStatus =
   | "summarize_data"
   | "format_report"
   | "general_chat"
+  | "process_document"
   | "complete";
 
 /**
  * Input type classification
  */
-export type InputType = "research" | "general";
+export type InputType = "research" | "general" | "document_url";
+
+/**
+ * RAG-related types
+ */
+export interface DocumentInfo {
+  id: string;
+  url: string;
+  title?: string;
+  chunks: number;
+  timestamp: string;
+  metadata?: any;
+}
+
+export interface RAGContext {
+  documents: DocumentInfo[];
+  relevantChunks?: {
+    content: string;
+    source: string;
+    score: number;
+  }[];
+}
 
 /**
  * Main workflow state interface
@@ -97,6 +139,8 @@ export interface WorkflowState {
   summary?: SummaryReport;
   report?: SummaryReport;
   inputType?: InputType;
+  ragContext?: RAGContext;
+  documentUrl?: string;
 }
 
 /**

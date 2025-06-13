@@ -21,7 +21,7 @@ const getOpenAIClient = () => {
     temperature: 0.3,
     maxRetries: 2,
     timeout: 20000,
-    maxTokens: 1000,
+    maxTokens: 100,
     openAIApiKey: apiKey,
   });
 };

@@ -2,7 +2,7 @@
 
 import { signInAction } from "@/app/actions";
 import { FormMessage, Message } from "@/components/etf/FormMessage";
-import { Navbar } from "@/components/layout";
+import Navbar from "@/components/layout/Navbar";
 import { SubmitButton } from "@/components/etf/SubmitButton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

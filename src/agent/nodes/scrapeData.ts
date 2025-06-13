@@ -1,4 +1,4 @@
-import { WorkflowState, ETFData } from "../types";
+import { WorkflowState, InvestmentData } from "../types";
 import orchestrateScraping from "../tools/orchestrateScraping";
 
 /**
@@ -18,7 +18,7 @@ const scrapeDataNode = async (state: WorkflowState): Promise<WorkflowState> => {
       };
     }
 
-    const allData: ETFData[] = [];
+    const allData: InvestmentData[] = [];
     const errors: string[] = [];
 
     for (const term of state.searchTerms) {
@@ -34,10 +34,12 @@ const scrapeDataNode = async (state: WorkflowState): Promise<WorkflowState> => {
     }
 
     if (allData.length === 0) {
+      const investmentTypeText =
+        state.preferences?.investmentTypes?.join(" or ") || "investment";
       const warningMessage =
         errors.length > 0
-          ? `No ETF data found. Encountered errors: ${errors.join("; ")}`
-          : "No ETF data found matching your criteria. This could be due to very specific search terms or temporary data source issues.";
+          ? `No ${investmentTypeText} data found. Encountered errors: ${errors.join("; ")}`
+          : `No ${investmentTypeText} data found matching your criteria. This could be due to very specific search terms or temporary data source issues.`;
 
       // Create a minimal summary for empty data case
       const emptySummary = {
@@ -45,10 +47,12 @@ const scrapeDataNode = async (state: WorkflowState): Promise<WorkflowState> => {
         topPicks: [],
         timestamp: new Date().toISOString(),
         metadata: {
-          totalETFsAnalyzed: 0,
+          totalInvestmentsAnalyzed: 0,
           averageYield: 0,
           topSectors: [],
           dataQuality: "low" as const,
+          etfCount: 0,
+          stockCount: 0,
         },
       };
 
